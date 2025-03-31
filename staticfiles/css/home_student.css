@@ -1,0 +1,152 @@
+* {
+    margin: 0;
+    padding: 0;
+
+    box-sizing: border-box;
+    font-family: 'Montserrat', sans-serif;
+}
+
+body{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+main{
+    width: 60%;
+}
+
+.logo-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin: 50px 0px 30px 0px;
+}
+
+.logo{
+    background-color: #FFFFFF;
+    border: solid 2px #E5E5E5;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+img#rank-logo{
+    width: 48px;
+    height: auto;
+}
+
+button{
+    width: 140px;
+    height: 40px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    background-color: #FF9C2E;
+    color: #FFFFFF;
+}
+
+button:hover{
+    background-color: #F78200;
+}
+
+.attempts-section{
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 50px;
+}
+
+table{
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td {
+    border: 2px solid #000000;
+    padding: 8px;
+    text-align: center;
+}
+
+td.title{
+    text-align: left;
+}
+
+.submit-section{
+    display: flex;
+    margin-bottom: 30px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.submit-header{
+    position: relative;
+    width: 100%;
+}
+
+.submit-header h3{
+    position: absolute;
+    left: 10px;
+    top: 50%; /* Center the text vertically */
+    transform: translateY(-50%); /* Adjust vertical centering */
+}
+
+.submit-header button{
+    position: absolute;
+    right: 10px;
+    top: 50%; /* Center the text vertically */
+    transform: translateY(-50%); /* Adjust vertical centering */
+}
+
+/* Quill Editor Styles */
+.text{
+    margin-top: 40px;
+    width: 100%;
+}
+.editor{
+    font-family: 'Montserrat', sans-serif;
+    margin-bottom: 30px;
+    width: 100%;
+}
+.editor h1{
+    font-size: 25px !important;
+}
+.editor h2{
+    font-size: 22x !important;
+}
+.editor h3{
+    font-size: 19px !important;
+}
+.editor p{
+    font-size: 16px !important;
+}
+.editor li{
+    font-size: 16px !important;
+}
+
+.grade-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+input[type="range"] {
+    width: 200px !important;
+}
+
+td a{
+    text-decoration: none !important;
+    color: #000000;
+}
+
+tr:hover{
+    background-color: #C574E4;
+}

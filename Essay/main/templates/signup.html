@@ -1,0 +1,111 @@
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Тіркелу</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/signup.css' %}">
+    <link rel="icon" href="{% static 'logo.png' %}">
+</head>
+
+<body>
+    <main>
+        <div class="logo-section">
+            <div class="logo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 512 512">
+                    <path fill="#59007A" d="M470.7 20L368.2 49.81l41.5-28.09c-26.2 5.92-59.3 17.5-100.9 36.19l-67.9 70.79L265 79.25c-23.3 12.96-48 29.95-71.8 49.85l-15.8 64.3l-3.4-47.6c-23.5 21.6-45.6 45.6-63.9 70.9c-19.23 26.5-34.26 54.5-41.79 82.4l-28.12-18.8c2.52 23.7 10.31 44.3 23.09 63.2l-33.62-10.3c7.64 23.5 20.13 38.7 41.25 51c-11.83 33.3-17.38 68.1-23.34 102.8l18.4 3.1C87.31 277.4 237.9 141.8 374 81.72l6.9 17.38c-121.7 54.5-216.3 146.5-265.8 279.1c18.1.1 35.8-2.1 52.2-6.3l4.9-60.9l13.1 55.5c10.9-4 20.9-8.8 29.8-14.4l-20.7-43.5l32.8 34.8c8-6.4 14.6-13.6 19.6-21.5c30.4-47.5 62.2-94.7 124.8-134.2l-45.7-16.2l70.1 2.1c11.4-5.8 23.4-12.9 32.5-19.6l-49.7-4l74.7-17.6c5.8-5.8 11.2-11.9 16.1-18c17.3-21.94 29-44.78 26.2-65.55c-1.3-10.39-7.5-20.16-17.6-25.63c-2.5-1.3-5.2-2.45-7.5-3.22"/>
+                </svg>
+            </div>
+            <h2>ESSAY GRADESCOPE</h2>
+        </div>
+        <form id="mainForm" method="POST" action="{% url 'signup' %}" novalidate enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="input-section">
+                <div class="form-control">
+                    <label for="lastname">Тегі</label>
+                    <input type="text" id="lastname" name="lastname" maxlength="20">
+                    <i class="icon"></i>
+                </div>
+
+                <div class="form-control">
+                    <label for="firstname">Аты</label>
+                    <input type="text" id="firstname" name="firstname" maxlength="20">
+                    <i class="icon"></i>
+                </div>
+
+                <div class="form-control">
+                    <label for="iin">ЖСН</label>
+                    <input type="text" id="iin" name="iin" inputmode="numeric" placeholder="Оқушының ЖСН (12 символ)" maxlength="13" autocomplete="off">
+                    <i class="icon"></i>
+                </div>
+
+                <div class="form-control">
+                    <label for="phone" id="phone-label">Телефон нөмірі</label>
+                    <input type="tel" id="phone" name="phone">
+                    <i class="icon"></i>
+                </div>
+
+                <div class="form-control">
+                    <label for="select-btn">Мектеп</label>
+                        <div class="select-container">
+                            <div class="select-menu">
+                                <div class="select-btn">
+                                    <span class="sBtn-text">Мектепті тандаңыз</span>
+                                    <i class="fa-solid fa-chevron-down"></i>
+                                </div>
+                                <ul class="options">
+                                    {% for option in Schools %}
+                                    <li class="option">
+                                        <span class="option-text">{{ option }}</span>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            <input type="hidden" name="school" id="selectedPosition" maxlength="20">
+                            <!-- <i class="icon"></i> -->
+                        </div>
+                </div>
+
+                <div class="form-control">
+                    <label for="grade">Сынып</label>
+                    <input type="number" id="grade" name="grade">
+                    <i class="icon"></i>
+                </div>
+
+                <div class="form-control">
+                    <label for="lang">Оқу тілі</label>
+                    <div class="radio-options">
+                        <div class="radio-option">
+                            <input type="radio" id="ru" name="lang" value="Рус" checked>
+                            <label for="ru">Орыс</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="kk" name="lang" value="Каз">
+                            <label for="kk">Қазақ</label>
+                        </div>
+                    </div>
+                    <i class="icon"></i>
+                </div>
+
+                <div id="pin">
+                    <label>Введите код из смс:</label>
+            
+                    <div class="digit-group" data-group-name="digits" data-autosubmit="false" autocomplete="off">
+                        <input type="text" id="digit-1" name="digit-1" data-next="digit-2" />
+                        <input type="text" id="digit-2" name="digit-2" data-next="digit-3" data-previous="digit-1" />
+                        <input type="text" id="digit-3" name="digit-3" data-next="digit-4" data-previous="digit-2" />
+                    </div>
+                </div>
+
+            </div>
+            <div class="button-section">
+                <button id="button_cancel">Назад</button>
+                <button id="button_submit">Тіркелу</button>
+            </div>
+        </form>
+        <script src="{% static 'js/signup.js' %}"></script>
+        <script src="https://unpkg.com/imask"></script>
+    </main>
+</body>

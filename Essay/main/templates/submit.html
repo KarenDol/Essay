@@ -1,0 +1,55 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Тіркелу</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/submit.css' %}">
+    <link rel="icon" href="{% static 'logo.png' %}">
+</head>
+
+<body>
+    <main>
+        <form id="mainForm" method="POST" action="{% url 'submit' id=id %}" novalidate enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="inputs-section">
+                <div class="form-control">
+                    <label for="title">Essay Title</label>
+                    <input type="text" id="title" name="title" maxlength="100">
+                </div>
+                <!-- Rounded toggle -->
+                <label class="switch">
+                    <input type="checkbox" name="checkbox" id="toggle">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="submit-section">
+                <div class="text" id="text-section">
+                    <div class="editor" id="editor"></div>
+                    <input name="text" id="text-input" type="hidden" hidden>
+                </div>
+                <div class="file-section" id="file-section">
+                    <label for="cv">Скан</label>
+                    <div class="file-input">
+                        <label for="file-input" class="file-selector">📄 Файл</label>
+                        <p id="file_name">Скан.pdf</p>
+                    </div>
+                    <input type="file" id="file-input" name="file" hidden>
+                    <i class="icon"></i>
+                </div>
+                <div class="button-group">
+                    <button id="button_cancel">Назад</button>
+                    <button id="button_save">Сохранить</button>
+                </div>
+            </div>
+        <!-- Include the Quill library -->
+        <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+        <script src="{% static 'js/submit.js'%}"></script>
+    </main>
+</body>
+{% endblock content %}

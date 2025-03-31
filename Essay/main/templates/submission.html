@@ -1,0 +1,62 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Тіркелу</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/submission.css' %}">
+    <link rel="icon" href="{% static 'logo.png' %}">
+</head>
+
+<body>
+    <main>
+        <div class="logo-section">
+            <div class="logo">
+                <img id="rank-logo" src="{% static 'ranks/Bronze.png' %}">
+            </div>
+            <h3>Submitted by Karen Dolmagambetov, member of Bronze League!</h3>
+        </div>        
+        <div class="details-section">
+            <div class="form-control">
+                <label for="title">Essay Title</label>
+                <input type="text" id="title" name="title" maxlength="100" disabled>
+            </div>
+            <h3>Task</h3>
+            <div class="text">
+                <div class="editor" id="task"></div>
+            </div>
+            <h3>Essay</h3>
+            <div class="text" id="essay-wrap">
+                <div class="editor" id="essay"></div>
+            </div>
+            <div class="file" id="file-wrap">
+                <iframe id="file-frame" width="100%" height="500px" style="border: none;"></iframe>
+            </div>
+            <div class="grade-toggle">
+                <label for="grade">Grade:</label>
+                <input type="range" id="result" name="result" min="1" max="10" step="1" disabled>
+                <span id="result-value"></span>
+            </div>
+            <h3>Feedback</h3>
+            <div class="text">
+                <div class="editor" id="feedback"></div>
+            </div>
+            <div class="button-group">
+                <button id="button_cancel">Назад</button>
+            </div>
+        </div>
+        <!-- Include the Quill library -->
+        <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+        <script>
+            const subm_obj = JSON.parse('{{ subm|escapejs }}');
+            const task_obj = JSON.parse('{{ task|escapejs }}');
+        </script>
+        <script src="{% static 'js/submission.js'%}"></script>
+    </main>
+</body>
+{% endblock content %}

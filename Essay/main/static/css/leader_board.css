@@ -1,0 +1,68 @@
+* {
+    margin: 0;
+    padding: 0;
+
+    box-sizing: border-box;
+    font-family: 'Montserrat', sans-serif;
+}
+
+body{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+main{
+    width: 60%;
+}
+
+.logo-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin: 50px 0px 30px 0px;
+}
+
+.logo{
+    background-color: #FFFFFF;
+    border: solid 2px #E5E5E5;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+img#rank-logo{
+    width: 48px;
+    height: auto;
+}
+
+table{
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td {
+    border: 2px solid #000000;
+    padding: 8px;
+    text-align: center;
+}
+
+td img{
+    height: 30px;
+    width: auto;
+}
+
+img.avatar{
+    height: 30px;
+    width: auto;
+    border-radius: 20px;
+}
+
+table{
+    margin-top: 30px;
+}

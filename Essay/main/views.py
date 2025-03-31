@@ -1,0 +1,607 @@
+from django.shortcuts import render, redirect
+from django.http import FileResponse, Http404, HttpResponse, JsonResponse
+from django.core.files.storage import FileSystemStorage
+from django.conf import settings
+from django.forms.models import model_to_dict
+from django.contrib.auth import login, logout, authenticate
+from django.contrib import messages
+from .consts import *
+from .models import *
+import re
+import json
+import requests
+import os
+import json
+import random
+import math
+from datetime import datetime, timedelta
+from django.utils.timezone import now
+
+# Create your views here.
+
+# The logic for authentication:
+# 1) If page is available only for student/teacher => request.session.get('user_type')
+# 2) If page is available to both => request.user.is_authenticated
+
+def home(request):
+    if request.session.get('user_type') == 'student':
+        student = Student.objects.get(user=request.user)
+        submissions = list(Submission.objects.filter(student=student)
+                            .order_by('deadline')
+                            .values('id', 'title', 'result', 'status', 'deadline', 'task'))
+        last_subm = submissions[-1]
+
+        if (last_subm['status'] == 'new'):
+            subm_json = json.dumps(last_subm, default=str)  # Using default=str for unsupported type
+            task_id = last_subm['task']
+            task = Task.objects.get(id=task_id)
+            task_dict = model_to_dict(task)
+            task_json = json.dumps(task_dict)
+            submissions = submissions[:-1] #Delete last subm from the attempts list
+        else:
+            subm_json = json.dumps(None)
+            task_json = json.dumps(None)
+
+        submissions_json = json.dumps(submissions, default=str)
+        context = {
+            'name': student.first_name,
+            'rank': rank_dict[student.rank],
+            'act_subm': subm_json,
+            'act_task': task_json, 
+            'submissions': submissions_json,
+        }
+        return render(request, 'home_student.html', context)
+    elif request.session.get('user_type') == 'teacher':
+        submissions = list(Submission.objects.exclude(status='new')
+                            .order_by('deadline')
+                            .values('id', 'title', 'result', 'status', 'deadline'))
+        submissions_json = json.dumps(submissions, default=str)
+        context = {
+            'submissions': submissions_json,
+        }
+        return render(request, 'home_teacher.html', context)
+    else:
+        return redirect('login')
+    
+#Authorisation
+def login_user(request):
+    if request.user.is_authenticated:
+        return redirect('home')
+    else:
+        if request.method == "POST":
+            username = request.POST['iin']
+            password = request.POST['passwd']
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                #Check if it's the student
+                try:
+                    Student.objects.get(user=user)
+                    request.session['user_type'] = 'student'
+                    return redirect('home')
+                except Student.DoesNotExist:
+                    try:
+                        Teacher.objects.get(user=user)
+                        request.session['user_type'] = 'teacher'
+                        return redirect('home')
+                    except Teacher.DoesNotExist:
+                        messages.error(request, 'Сіздің акаунтыңызбен мәселе туылды')
+                        return redirect('logout')
+            else:
+                messages.error(request, "Login failed. Please check your username and password.")
+                return redirect('login')
+        else:
+            return render(request, 'login.html')
+        
+#Forgot password handler
+def forgot(request):
+    if request.user.is_authenticated:
+        return redirect('home')
+    else:
+        if request.method == "POST":
+            iin = request.POST['iin'].replace(' ', '')
+            phone = request.POST['phone']
+            try:
+                student = Student.objects.get(iin=iin)
+                print(student.phone, phone)
+                if (student.phone == phone):
+                    user = student.user
+                    user.set_password('AIS@2025')
+                    user.save()
+
+                    text = "Your account password has been set to the default password: AIS@2025. Please remember to change it upon logging in."
+                    wa(phone, text)
+
+                    messages.success(request, "The new credentials were sent to your WhatsApp")
+                    return redirect('login')
+                else:
+                    messages.error(request, "The IIN and phone number did not match")
+                    return redirect('forgot')
+            except Student.DoesNotExist:
+                messages.error(request, "The student with that IIN does not exist")
+                return redirect('forgot')
+        else:
+            return render(request, 'forgot.html')
+        
+        
+def logout_user(request):
+    logout(request)
+    messages.info(request, "You have been logged out!")
+    return redirect('login')
+
+def signup(request):
+    if request.user.is_authenticated:
+        return redirect('home')
+    else:
+        if request.method == "POST":
+            iin = request.POST['iin'].replace(' ', '')
+            try:
+                student = Student.objects.get(iin=iin)
+                messages.error(request, 'Student with this IIN already exists')
+                return redirect('login')
+            except Student.DoesNotExist:
+                last_name = request.POST['lastname']
+                first_name = request.POST['firstname']
+                phone = request.POST['phone']
+                school = request.POST['school']
+                grade = request.POST['grade']
+                lang = request.POST['lang']
+
+                # Create the user with IIN as username and default password
+                user = User.objects.create_user(username=iin, password='AIS@2025')
+                user.first_name = first_name
+                user.last_name = last_name
+                user.save()
+
+                # Create and save the student linked to the user
+                student = Student.objects.create(
+                    user=user,
+                    last_name=last_name,
+                    first_name=first_name,
+                    iin=iin,
+                    picture = 'Avatar.png',
+                    phone=phone,
+                    school=school,
+                    grade=grade,
+                    lang=lang,
+                    rank='iron',
+                )
+                student.save()
+
+                #Assign the task for the new student, first attempt
+                assign_task(student, 1)
+
+                #Welcome msg with credentials
+                wa(phone, 'Welcome to Essay GradeScope! Use your IIN as login and AIS@2025 as password')
+
+                return redirect('login')
+        else:
+            context = {
+                "Schools": schools_choice,
+            }
+            return render(request, 'signup.html', context)
+        
+def user_settings(request):
+    if not (request.user.is_authenticated):
+        return redirect('login')
+    if request.session['user_type'] == 'student':
+        student = Student.objects.get(user=request.user)
+    else:
+        #Think about teacher logic as well, maybe disable for them
+        cur_user = Teacher.objects.get(user=request.user)
+    user = request.user
+    if request.method == "POST":
+        new_username = request.POST['username']
+        if new_username and new_username != user.username:
+            if User.objects.filter(username=new_username).exists():
+                messages.error(request,'Данное имя пользователя уже занято')
+                return redirect('user_settings')
+            else:
+                user.username = new_username
+                user.save()
+        
+        oldPassword = request.POST['oldPassword']
+        newPassword = request.POST['newPassword']
+        if oldPassword:
+            user = authenticate(username = request.user.username, password = oldPassword)
+            if user is not None:
+                user.set_password(newPassword)
+                user.save()
+            else:
+                messages.error(request,'Вы ввели неверный старый пароль')
+                return redirect('user_settings')
+        
+        new_phone = request.POST['phone']
+        if new_phone and new_phone != student.phone:
+            if wa_exists(new_phone):
+                student.phone = new_phone
+            else:
+                messages.success(request, 'По указанному номеру телефона нет WhatsApp')
+                return redirect('user_settings')
+
+        if 'avatar' in request.FILES:
+            new_avatar = request.FILES['avatar']
+            folder_path = os.path.join(settings.STATIC_ROOT, 'avatars')
+
+            # Extract file extension
+            file_extension = os.path.splitext(new_avatar.name)[1]  # Get file extension (e.g., .jpg, .png)
+            file_name = f"{student.iin}{file_extension}"  # Append extension to file name
+            file_path = os.path.join(folder_path, file_name)
+
+            # Delete the file if it exists (only 1 image per user)
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+
+            fs = FileSystemStorage(folder_path)
+            fs.save(file_name, new_avatar)
+
+            student.picture = (file_name)
+
+        user.save()
+        student.save()
+
+        messages.success(request, 'Данные пользоватателя были успешны изменены')
+        return redirect('user_settings')
+    else:
+        user_dict = model_to_dict(student, fields=['name', 'phone', 'picture'])
+        user_dict['username'] = user.username
+        user_dict['picture'] = 'avatars/' + user_dict['picture']
+        user_dict['full_name'] = f"{student.last_name} {student.first_name}"
+        user_dict['rank_info'] = f"{rank_dict[student.rank]} Лига | {student.rr}"
+        context = {
+            'user_dict': user_dict,
+        }
+        return render(request, 'user_settings.html', context)
+
+#Fetch the name and the picture of the user for the index.html
+def get_user_info(request):
+    if request.session.get('user_type') == 'student':
+        user = Student.objects.get(user=request.user)
+        user_info = {
+            'name': f"{user.last_name} {user.first_name}",
+            'picture':  f"avatars/{user.picture}", 
+            'rank_pic': f"ranks/{user.rank}.png",
+        }
+        return JsonResponse(user_info)
+    else:
+        user = request.user
+        user_info = {
+            'name': f"{user.last_name} {user.first_name}",  
+            'picture': "Avatar.png",
+        }
+        return JsonResponse(user_info)
+
+#GET the static file
+def serve_static(request, filename):
+    file_path = os.path.join(settings.STATIC_ROOT, filename)
+    if os.path.exists(file_path):
+        return FileResponse(open(file_path, 'rb'))
+    else:
+        raise Http404("Avatar not found")
+    
+def submit(request, id):
+    if not request.session.get('user_type') == 'student':
+        messages.error(request, 'This page is available only for students')
+        return redirect('home')
+    student = Student.objects.get(user=request.user)
+    try:
+        subm = Submission.objects.get(id=id)
+        if (student != subm.student):
+            messages.error(request, 'Looks like you can not submit this essay')
+            return redirect('home')
+        if subm.status=='new':
+            if request.method=="POST":
+                title = request.POST['title']
+                checkbox = request.POST.get('checkbox')
+                if (checkbox):
+                    type = 'file'
+
+                    #Save essay file
+                    folder_path = os.path.join(settings.STATIC_ROOT, 'essays')
+                    os.makedirs(folder_path, exist_ok=True)
+                    file = request.FILES['file']
+                    fs = FileSystemStorage(location=folder_path)
+                    fs.save(f"submission_{id}.pdf", file)
+
+                else:
+                    type = 'text'
+                    text = request.POST['text']
+
+                    #Update Submission
+                    subm.text = text
+                
+                subm.title = title
+                subm.type = type
+                subm.status = 'rev'
+                subm.subm_date = now()
+                subm.save()
+
+                messages.success(request, 'The essay was successfully submitted')
+                return redirect('home')
+            else:
+                context={
+                    "id": id,
+                }
+                return render(request, 'submit.html', context)
+        else:
+            messages.error(request, 'Данная работа уже сдана и находится на проверке')
+            return redirect('home')
+    except Submission.DoesNotExist:
+        return redirect('error', 'Кажется вы забрели не туда')
+        
+
+def tasks(request):
+    if not request.session.get('user_type') == 'teacher':
+        messages.error(request, 'This page is available only for teachers')
+        return redirect('home')
+    if request.method == 'POST':
+        rank = request.POST['rank']
+        task1 = request.POST['task1']
+        task2 = request.POST['task2']
+        task3 = request.POST['task3']
+        task4 = request.POST['task4']
+        task5 = request.POST['task5']
+
+        tasks = [task1, task2, task3, task4, task5]
+
+        start_id = rank_id[rank]
+        for i in range(5):
+            task = Task.objects.get(id=start_id+i)
+            task.text = tasks[i]
+            task.save()
+
+        messages.success(request, 'Tasks were updated succesfully')
+        return redirect('home')
+    else:
+        tasks = list(Task.objects.all()
+                .values('id', 'rank', 'text'))
+        tasks_json = json.dumps(tasks, default=str)
+        context = {
+            'tasks': tasks_json,
+        }
+        return render(request, 'tasks.html', context)
+
+def check(request, id):
+    if not request.session.get('user_type') == 'teacher':
+        messages.error(request, 'This page is available only for teachers')
+        return redirect('home')
+    try:
+        subm = Submission.objects.get(id=id)
+        if subm.status != 'rev':
+            return redirect('error', "Submission is either checked or not completed yet")
+        if request.method == "POST":
+            result = int(request.POST['result'])
+            feedback = request.POST['feedback']
+
+            subm.result = result
+            subm.feedback = feedback
+            subm.status = 'che'
+            subm.save()
+
+            #Rank-up logic
+            student = subm.student
+            attempt = subm.attempt
+
+            if result > 6:
+                #Rank-up
+                next_rank = rank_up[student.rank]
+                student.rank = next_rank
+                student.save()
+
+                #Increase RR
+                #(Result - 70% + Time - 30%) * Attempt number percentage
+                subm_date = subm.subm_date
+                deadline = subm.deadline
+
+                diff = deadline - subm_date
+                total_diff = diff.total_seconds() 
+
+                seconds_in_week = 7 * 24 * 3600  # 604800 seconds
+                # Ratio of diff to a week
+                time_ratio = total_diff / seconds_in_week
+
+                result_ratio = result / 10
+
+                subm_rr = 1000 * (0.7 * result_ratio + 0.3 * time_ratio) * ((6 - attempt) / 5)
+                subm_rr = math.ceil(subm_rr) # Round up the result
+                student.rr += subm_rr
+                student.save()
+
+                #Assign New Task, diamonds don't get new assignments
+                if student.rank != 'diamond':
+                    assign_task(student, 1) 
+            else:
+                #Assign New Task, second or more attempt
+                assign_task(student, attempt+1)
+
+            messages.success(request, 'The essay feedback was successfully submitted')
+            return redirect('home')
+        else:
+            subm_dict = model_to_dict(subm)
+            subm_json = json.dumps(subm_dict, default=str)
+            task_dict = model_to_dict(subm.task)
+            task_json = json.dumps(task_dict, default=str)
+            context = {
+                'subm': subm_json,
+                'task': task_json,
+                'id': id,
+            }
+            return render(request, 'check.html', context)
+    except Submission.DoesNotExist:
+        return redirect('error', error_code='The submission with this id does not exist')
+    
+def submission(request, id):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    try:
+        submission = Submission.objects.get(id=id)
+        #Redirect is the submission is not checked
+        if submission.status != 'che':
+            return redirect('check', id=id)
+        submission_dict = model_to_dict(submission)
+        submission_json = json.dumps(submission_dict, default=str)
+        task = submission.task
+        task_dict = model_to_dict(task)
+        task_json = json.dumps(task_dict, default=str)  
+        if request.session['user_type'] == 'student':
+            student = Student.objects.get(user=request.user)
+            #Student can see only his submissions
+            if (submission.student == student):
+                context = {
+                    'subm': submission_json,
+                    'task': task_json,
+                }
+                return render(request, 'submission.html', context)
+            else:
+                messages.error(request, 'Looks like you can not see this submission')
+                return redirect('home')
+        else:
+            context = {
+                'subm': submission_json,
+                'task': task_json,
+            }
+            return render(request, 'submission.html', context)
+    except Submission.DoesNotExist:
+        return redirect('error', error_code = 'Submission with this id does not exist')
+
+def populate_tasks():
+    # Delete all existing tasks first
+    Task.objects.all().delete()
+
+    ranks = [
+        ('iron', 'Железо'),
+        ('bronze', 'Бронза'),
+        ('silver', 'Серебро'),
+        ('gold', 'Золото'),
+        ('plat', 'Платина'),
+    ]
+    
+    task_id = 1  
+    
+    
+    for rank, _ in ranks:
+        for _ in range(5):  # Create 5 tasks for each rank
+            Task.objects.create(id=task_id, rank=rank, text="{\"ops\":[{\"insert\":\"default\\n\"}]}")  # Set ID explicitly
+            task_id += 1  # Increment the task ID for the next task
+
+def assign_task(student, attempt):
+    #Get the base id
+    rank = student.rank
+    start_id = rank_id[rank]
+
+    #Populate available tasks
+    tasks = []
+    for i in range(5):
+        tasks.append(start_id+i)
+
+    #Second or more attempt
+    if (attempt!=1):
+        #Check for prev_subm and get the ids of the attempts in the same league
+        submissions = Submission.objects.filter(student=student)
+
+        #Remove attempted tasks
+        for submission in submissions:
+            task = submission.task
+            task_id = task.id
+            if task_id>start_id:
+                tasks.remove(task_id)
+
+    #Choose random task
+    random_number = random.randint(0, len(tasks)-1)
+    task_id = tasks[random_number]
+    task = Task.objects.get(id=task_id)
+    deadline = now() + timedelta(weeks=1)
+
+    #Create new submission
+    submission = Submission(student=student, task=task, status='new', deadline=deadline, attempt=attempt)
+    submission.save()
+
+
+def error(request, error_code):
+    return render(request, '404.html', {'error_code': error_code})
+
+def wa_exists(request, phone):
+    try:
+        # Remove +, parentheses, and dashes from the phone number
+        phone = re.sub(r'[^\d]', '', phone)  # Keeps only digits
+        print(phone)
+
+        url = "https://7103.api.greenapi.com/waInstance7103163711/checkWhatsapp/677efe89a87e474f93b6ca379ea32a364bf6be6020414505bd"
+
+        payload = { 
+            "phoneNumber": phone  
+        }
+        headers = {
+            'Content-Type': 'application/json'
+        }
+
+        response = requests.post(url, json=payload, headers=headers)
+
+        return JsonResponse(response.json(), status = 200)
+    
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON data'}, status=400)
+
+def wa(phone, text):
+    url = "	https://7103.api.greenapi.com/waInstance7103163711/sendMessage/677efe89a87e474f93b6ca379ea32a364bf6be6020414505bd"
+
+    # Remove +, parentheses, and dashes from the phone number
+    phone = re.sub(r'[^\d]', '', phone)  # Keeps only digits
+
+    payload = {
+                "chatId": f"{phone}@c.us",
+                "message": text,
+            }
+    
+    headers = {
+                'Content-Type': 'application/json'
+            }
+    
+    requests.post(url, json=payload, headers=headers)
+
+def wa_PIN(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)  # Load JSON data from request body
+            phone = data.get('phone')
+
+            if not phone:
+                return JsonResponse({"status": "error", "message": "Phone number is required"}, status=400)
+
+            # Remove +, parentheses, and dashes from the phone number
+            phone = re.sub(r'[^\d]', '', phone)  # Keeps only digits
+
+            PIN = random.randint(100, 999)
+            text = f"Сіздің WhatsApp нөміріңізді растау үшін PIN коды: *{PIN}*"
+
+            url = "https://7103.api.greenapi.com/waInstance7103163711/sendMessage/677efe89a87e474f93b6ca379ea32a364bf6be6020414505bd"
+            payload = {
+                "chatId": f"{phone}@c.us",
+                "message": text,
+            }
+
+            headers = {
+                'Content-Type': 'application/json'
+            }
+
+            response = requests.post(url, json=payload, headers=headers)
+
+            if response.status_code == 200:
+                return JsonResponse({"status": "success", "pin": PIN})
+            else:
+                return JsonResponse({"status": "error", "message": "Failed to send message"}, status=500)
+
+        except json.JSONDecodeError:
+            return JsonResponse({"status": "error", "message": "Invalid JSON"}, status=400)
+
+    return JsonResponse({"status": "error", "message": "Only POST method is allowed"}, status=405)
+
+def leader_board(request):
+    students = list(Student.objects.all()
+                                        .order_by('-rr')
+                                        .values('rank', 'rr', 'first_name', 'last_name', 'picture')[:10])
+    students_json = json.dumps(students, default=str)
+    context = {
+        'students': students_json,
+    }
+    return render(request, 'leader_board.html', context)

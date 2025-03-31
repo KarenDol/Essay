@@ -1,0 +1,67 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Тіркелу</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/home_student.css' %}">
+    <link rel="icon" href="{% static 'logo.png' %}">
+</head>
+
+<body>
+    <main>
+        <div class="logo-section">
+            <div class="logo">
+                <a href="/leader"><img id="rank-logo"></a>
+            </div>
+            <h2>Сәлем {{name}}! {{rank}} лигаға қош келдіңіз!</h2>
+        </div>
+        <div class="attempts-section" id="attempts-section">
+            <h3>Submissions List</h3>
+            <table border="2" id="submissions-table">
+                <colgroup>
+                    <col style="width: 5%">
+                    <col style="width: 85%">
+                    <col style="width: 10%">
+                </colgroup>
+                <tr>
+                    <th>#</th>
+                    <th>Title</th>
+                    <th>Result</th>
+                </tr>    
+            </table>
+        </div>
+        <div class="submit-section" id="submit-section">
+            <div class="submit-header">
+                <h3 id="submit-h3"></h3>
+                <button id="attempt-button">Attempt</button>
+            </div>
+            <div class="text">
+                <div class="editor" id="task-desc"></div>
+            </div>
+        </div>
+        <script>
+            //Populate Logo Section
+            fetch('{% url "get_user_info" %}')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('rank-logo').src = '/api/serve_static/' + data.rank_pic;
+            })
+            .catch(error => console.error('Error fetching user info:', error));
+        </script>
+        <!-- Include the Quill library -->
+        <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+        <script>
+            const act_subm = JSON.parse('{{ act_subm|escapejs }}');
+            const act_task = JSON.parse('{{ act_task|escapejs }}');
+            const submissions = JSON.parse('{{ submissions|escapejs }}');
+        </script>
+        <script src="{% static 'js/home_student.js'%}"></script>
+    </main>
+</body>
+{% endblock content %}

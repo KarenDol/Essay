@@ -1,0 +1,44 @@
+{% extends 'index.html' %}
+{% block content %}
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Тіркелу</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/home_teacher.css' %}">
+    <link rel="icon" href="{% static 'logo.png' %}">
+</head>
+
+<body>
+    <main>
+        <div class="attempts-section">
+            <div class="attempts-header">
+                <h3>Students' Submissions</h3>
+                <button onclick="location.href='/tasks'">Tasks</button>
+            </div>
+            <table border="2" id="table">
+                <colgroup>
+                    <col style="width: 5%">
+                    <col style="width: 15%">
+                    <col style="width: 70%">
+                    <col style="width: 10%">
+                </colgroup>
+                <tr>
+                    <th>#</th>
+                    <th>Date</th>
+                    <th>Title</th>
+                    <th>Result</th>
+                </tr>
+            </table>
+        </div>
+    </main>
+    <script>
+        const submissions = JSON.parse('{{ submissions|escapejs }}');
+    </script>
+    <script src="{% static 'js/home_teacher.js'%}"></script>
+</body>
+{% endblock content %}
