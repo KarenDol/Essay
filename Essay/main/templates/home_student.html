@@ -22,7 +22,10 @@
             <h2>Сәлем {{name}}! {{rank}} лигаға қош келдіңіз!</h2>
         </div>
         <div class="attempts-section" id="attempts-section">
-            <h3>Submissions List</h3>
+            <div class="attempts-header">
+                <h3>Submissions List</h3>
+                <button class="secondary" onclick="location.href='/leaderboard'">Leaderboard</button>
+            </div>
             <table border="2" id="submissions-table">
                 <colgroup>
                     <col style="width: 5%">

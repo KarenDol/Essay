@@ -421,9 +421,11 @@ def check(request, id):
             subm_json = json.dumps(subm_dict, default=str)
             task_dict = model_to_dict(subm.task)
             task_json = json.dumps(task_dict, default=str)
+            student = subm.student
             context = {
                 'subm': subm_json,
                 'task': task_json,
+                'student_name': f"{student.last_name} {student.first_name}",
                 'id': id,
             }
             return render(request, 'check.html', context)
@@ -596,12 +598,23 @@ def wa_PIN(request):
 
     return JsonResponse({"status": "error", "message": "Only POST method is allowed"}, status=405)
 
-def leader_board(request):
-    students = list(Student.objects.all()
-                                        .order_by('-rr')
-                                        .values('rank', 'rr', 'first_name', 'last_name', 'picture')[:10])
-    students_json = json.dumps(students, default=str)
-    context = {
-        'students': students_json,
-    }
-    return render(request, 'leader_board.html', context)
+def leaderboard(request):
+    try:
+        student = Student.objects.get(user=request.user)
+        rank = Student.objects.filter(rr__gt=student.rr).count() + 1
+        student_dict = model_to_dict(student)
+        student_json = json.dumps(student_dict)
+        students = list(Student.objects.all()
+                                            .order_by('-rr')
+                                            .values('rank', 'rr', 'first_name', 'last_name', 'picture')[:10])
+        students_json = json.dumps(students, default=str)
+        context = {
+            'students': students_json,
+            'student': student_json,
+            'rank': rank
+        }
+        return render(request, 'leaderboard.html', context)
+    
+    except Student.DoesNotExist:
+        messages.error(request, "Only students can see that page")
+        return redirect("home")

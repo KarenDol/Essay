@@ -55,6 +55,18 @@ button:hover{
     background-color: #F78200;
 }
 
+button.secondary, button.secondary:hover{
+    width: 140px;
+    height: 40px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    background-color: #FFFFFF;
+    color: #59007A;
+    border: #59007A solid 2px;
+    cursor: pointer;
+}
+
 .attempts-section{
     display: flex;
     align-items: center;
@@ -62,6 +74,13 @@ button:hover{
     justify-content: center;
     gap: 20px;
     margin-bottom: 50px;
+}
+
+.attempts-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
 }
 
 table{
