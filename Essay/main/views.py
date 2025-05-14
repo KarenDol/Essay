@@ -5,6 +5,7 @@ from django.conf import settings
 from django.forms.models import model_to_dict
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
+from django.views.decorators.csrf import csrf_exempt
 from .consts import *
 from .models import *
 import re
@@ -51,13 +52,21 @@ def home(request):
             'submissions': submissions_json,
         }
         return render(request, 'home_student.html', context)
+    
     elif request.session.get('user_type') == 'teacher':
         submissions = list(Submission.objects.exclude(status='new')
                             .order_by('deadline')
-                            .values('id', 'title', 'result', 'status', 'deadline'))
+                            .values('id', 'title', 'result', 'status', 'deadline', 'task__rank'))
+        tasks = list(Task.objects.all()
+                .values('id', 'rank', 'text'))
+        
         submissions_json = json.dumps(submissions, default=str)
+        tasks_json = json.dumps(tasks, default=str)
+        rank_id_json = json.dumps(rank_id)
         context = {
             'submissions': submissions_json,
+            'tasks': tasks_json,
+            'rank_id': rank_id_json,
         }
         return render(request, 'home_teacher.html', context)
     else:
@@ -329,37 +338,34 @@ def submit(request, id):
     except Submission.DoesNotExist:
         return redirect('error', 'Кажется вы забрели не туда')
         
-
+@csrf_exempt
 def tasks(request):
     if not request.session.get('user_type') == 'teacher':
-        messages.error(request, 'This page is available only for teachers')
-        return redirect('home')
+        return JsonResponse({'status': 'error', 'message': "Only teacher can POST to this page"}, status=400)
+
     if request.method == 'POST':
-        rank = request.POST['rank']
-        task1 = request.POST['task1']
-        task2 = request.POST['task2']
-        task3 = request.POST['task3']
-        task4 = request.POST['task4']
-        task5 = request.POST['task5']
+        try:
+            data = json.loads(request.body)
+            rank = data.get('rank')
+            task1 = data.get('task1')
+            task2 = data.get('task2')
+            task3 = data.get('task3')
+            task4 = data.get('task4')
+            task5 = data.get('task5')
 
-        tasks = [task1, task2, task3, task4, task5]
+            tasks = [task1, task2, task3, task4, task5]
 
-        start_id = rank_id[rank]
-        for i in range(5):
-            task = Task.objects.get(id=start_id+i)
-            task.text = tasks[i]
-            task.save()
+            start_id = rank_id[rank]
+            for i in range(5):
+                task = Task.objects.get(id=start_id+i)
+                task.text = tasks[i]
+                task.save()
 
-        messages.success(request, 'Tasks were updated succesfully')
-        return redirect('home')
-    else:
-        tasks = list(Task.objects.all()
-                .values('id', 'rank', 'text'))
-        tasks_json = json.dumps(tasks, default=str)
-        context = {
-            'tasks': tasks_json,
-        }
-        return render(request, 'tasks.html', context)
+            return JsonResponse({'status': 'ok'})
+
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
 
 def check(request, id):
     if not request.session.get('user_type') == 'teacher':
@@ -422,10 +428,12 @@ def check(request, id):
             task_dict = model_to_dict(subm.task)
             task_json = json.dumps(task_dict, default=str)
             student = subm.student
+            
             context = {
                 'subm': subm_json,
                 'task': task_json,
                 'student_name': f"{student.last_name} {student.first_name}",
+                'rank': f"ranks/{subm.task.rank}.png",
                 'id': id,
             }
             return render(request, 'check.html', context)
@@ -442,6 +450,7 @@ def submission(request, id):
             return redirect('check', id=id)
         submission_dict = model_to_dict(submission)
         submission_json = json.dumps(submission_dict, default=str)
+        student = submission.student
         task = submission.task
         task_dict = model_to_dict(task)
         task_json = json.dumps(task_dict, default=str)  
@@ -461,6 +470,8 @@ def submission(request, id):
             context = {
                 'subm': submission_json,
                 'task': task_json,
+                'student_name': f"{student.last_name} {student.first_name}",
+                'rank': f"ranks/{task.rank}.png",
             }
             return render(request, 'submission.html', context)
     except Submission.DoesNotExist:
@@ -618,3 +629,4 @@ def leaderboard(request):
     except Student.DoesNotExist:
         messages.error(request, "Only students can see that page")
         return redirect("home")
+    

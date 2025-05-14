@@ -15,12 +15,34 @@
 
 <body>
     <main>
-        <div class="attempts-section">
-            <div class="attempts-header">
-                <h3>Students' Submissions</h3>
-                <button onclick="location.href='/tasks'">Tasks</button>
+        <div class="logo-section">
+            <div class="logo" id="iron">
+                <img src="{% static 'ranks/iron.png' %}">
             </div>
-            <table border="2" id="table">
+            <div class="logo" id="bronze">
+                <img src="{% static 'ranks/bronze.png' %}">
+            </div>
+            <div class="logo" id="silver">
+                <img src="{% static 'ranks/silver.png' %}">
+            </div>
+            <div class="logo" id="gold">
+                <img  src="{% static 'ranks/gold.png' %}">
+            </div>
+            <div class="logo" id="plat">
+                <img src="{% static 'ranks/plat.png' %}">
+            </div>
+        </div>
+
+        <div class="table-header">
+            <h3 id="table_header"></h3>
+            <div class="button-group-1">
+                <button id="btn_subm">Эссе</button>
+                <button id="btn_task">Тапсырма</button>
+            </div>
+        </div>
+
+        <div id="div_subm">
+            <table border="2" >
                 <colgroup>
                     <col style="width: 5%">
                     <col style="width: 15%">
@@ -33,11 +55,41 @@
                     <th>Title</th>
                     <th>Result</th>
                 </tr>
+                <tbody id="table">
+                    <!-- Rows will be inserted here -->
+                  </tbody>
             </table>
         </div>
+        
+        <div id="div_task">
+            <div class="tasks-section">
+                <div class="text">
+                    <div class="editor" id="task1"></div>
+                </div>
+                <div class="text">
+                    <div class="editor" id="task2"></div>
+                </div>
+                <div class="text">
+                    <div class="editor" id="task3"></div>
+                </div>
+                <div class="text">
+                    <div class="editor" id="task4"></div>
+                </div>
+                <div class="text">
+                    <div class="editor" id="task5"></div>
+                </div>
+            </div>
+            <div class="button-group-2">
+                <button class="secondary" id="btn_cancel">Отменить</button>
+                <button class="primary send" id="btn_save">Сохранить</button>
+            </div>
+        </div>
     </main>
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
     <script>
         const submissions = JSON.parse('{{ submissions|escapejs }}');
+        const tasks = JSON.parse('{{ tasks|escapejs }}');
+        const rank_id = JSON.parse('{{ rank_id|escapejs }}');
     </script>
     <script src="{% static 'js/home_teacher.js'%}"></script>
 </body>
