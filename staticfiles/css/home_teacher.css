@@ -89,16 +89,21 @@ button.send:hover{
     margin-bottom: 30px;
 }
 
+/* Table styles */
 table{
     border-collapse: collapse;
     width: 100%;
     margin-bottom: 50px;
+    table-layout: fixed;
 }
 
 th, td {
+    word-wrap: break-word;
+    word-break: break-word;
     border: 2px solid #000000;
     padding: 8px;
     text-align: center;
+    white-space: normal; /* Allow multiline content */
 }
 
 td.title{
