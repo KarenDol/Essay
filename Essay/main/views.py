@@ -56,7 +56,7 @@ def home(request):
     elif request.session.get('user_type') == 'teacher':
         submissions = list(Submission.objects.exclude(status='new')
                             .order_by('deadline')
-                            .values('id', 'title', 'result', 'status', 'deadline', 'task__rank'))
+                            .values('id', 'title', 'result', 'status', 'deadline', 'student__first_name', 'student__last_name', 'task__rank'))
         tasks = list(Task.objects.all()
                 .values('id', 'rank', 'text'))
         

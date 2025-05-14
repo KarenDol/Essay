@@ -129,10 +129,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 const formattedDate = date.toISOString().split('T')[0];
 
                 const row = document.createElement('tr');
+                const student_name = `${submission.student__first_name} ${submission.student__last_name}`;
                 row.innerHTML = `
                 <td>${i + 1}</td>
                 <td>${formattedDate}</td>
-                <td><a href="/submission/${submission.id}">${submission.title}</a></td>
+                <td><a href="/submission/${submission.id}">${student_name}: ${submission.title}</a></td>
                 <td>${submission.result || '--'}/10</td>
                 `;
                 table.appendChild(row);
