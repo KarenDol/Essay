@@ -26,7 +26,7 @@ SECRET_KEY = "django-insecure-(8b#sbxksve-0=k_7m*3)wx-!_23#dhs%+x0vf^3(3euw3&2v!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['essay.a1s.kz']
+ALLOWED_HOSTS = ['essay.a1s.kz', 'localhost']
 
 
 # Application definition
@@ -112,8 +112,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_ROOT = '/home/ubuntu/LMS/staticfiles'
-# STATIC_ROOT = '/Users/Lil_himick/Desktop/Developer/Essay/staticfiles'
+# STATIC_ROOT = '/home/ubuntu/LMS/staticfiles'
+STATIC_ROOT = '/Users/Lil_himick/Desktop/Developer/Essay_light/staticfiles'
 STATIC_URL = "static/"
 
 STATICFILES_DIRS = [

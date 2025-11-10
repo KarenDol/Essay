@@ -21,8 +21,6 @@ class Student(models.Model):
         ('bronze', 'Бронза'),
         ('silver', 'Серебро'),
         ('gold', 'Золото'),
-        ('plat', 'Платина'),
-        ('diamond', 'Бриллиант')
     ])
     rr = models.IntegerField(default=0) #RR for total ranking
 
@@ -40,8 +38,6 @@ class Task(models.Model):
         ('iron', 'Железо'),
         ('bronze', 'Бронза'),
         ('silver', 'Серебро'),
-        ('gold', 'Золото'),
-        ('plat', 'Платина'),
     ]) #For which rank task was designed
     text = models.JSONField()  #To store Delta object as JSON
 

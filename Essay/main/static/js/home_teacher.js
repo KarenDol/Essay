@@ -29,10 +29,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const iron = document.getElementById('iron');
     const bronze = document.getElementById('bronze');
     const silver = document.getElementById('silver');
-    const gold = document.getElementById('gold');
-    const plat = document.getElementById('plat');
 
-    const ranks = [iron, bronze, silver, gold, plat];
+    const ranks = [iron, bronze, silver];
 
     //By default mode='subm' and rank='iron' are chosen
     let mode = 'subm';

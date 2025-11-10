@@ -485,8 +485,6 @@ def populate_tasks():
         ('iron', 'Железо'),
         ('bronze', 'Бронза'),
         ('silver', 'Серебро'),
-        ('gold', 'Золото'),
-        ('plat', 'Платина'),
     ]
     
     task_id = 1  
