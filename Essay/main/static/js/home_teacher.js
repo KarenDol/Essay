@@ -25,6 +25,9 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     const editors = [task1, task2, task3, task4, task5];
 
+    // Task ids
+    task_ids = [0, 0, 0, 0, 0];
+
     //ranks
     const iron = document.getElementById('iron');
     const bronze = document.getElementById('bronze');
@@ -79,12 +82,12 @@ document.addEventListener('DOMContentLoaded', function () {
     btn_save.addEventListener('click', async () => {
         try {
             const data = {
-                rank: rank,
                 task1: JSON.stringify(task1.getContents()),
                 task2: JSON.stringify(task2.getContents()),
-                task3: JSON.stringify(task3.getContents()),
+                task3: JSON.stringify(task3.getContents()), 
                 task4: JSON.stringify(task4.getContents()),
-                task5: JSON.stringify(task5.getContents())
+                task5: JSON.stringify(task5.getContents()),
+                task_ids: task_ids, 
             };
 
             const response = await fetch('/tasks/', {
@@ -95,13 +98,11 @@ document.addEventListener('DOMContentLoaded', function () {
               body: JSON.stringify(data)
             });
 
-
             if (response.status === 200) {
                 alert('✅ Жаңа тапсырламалар сақталынды!');
                 //Update the tasks dictionary
-                startId = rank_id[rank];
                 editors.forEach((editor, i) => {
-                    const taskId = startId + i;
+                    const taskId = task_ids[i];
                     const task = tasks.find(t => t.id === taskId);
             
                     if (task) {
@@ -143,9 +144,13 @@ document.addEventListener('DOMContentLoaded', function () {
         const filteredTasks = tasks.filter(task => task.rank === rank);
 
         filteredTasks.forEach((task, index) => {
+            // Set editor's contents
             const editor = editors[index];
             const text_delta = JSON.parse(task.text);
             editor.setContents(text_delta);
+
+            // Update task_ids
+            task_ids[index] = task.id;
         });
     }
 

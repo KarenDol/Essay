@@ -1,3 +1,12 @@
+schools_dict = {
+    "ais": "Aqbobek International School",
+    "al": "Aqbobek Lyceum",
+    "sch_1": "№1 Орта Мектеп",
+    "sch_2": "№2 Мектеп Гимназия",
+    "sch_3": "№3 Орта Мектеп",
+    "sch_4": "№4 Орта Мектеп"
+}
+
 schools_choice = [
     "Aqbobek International School", "Aqbobek Lyceum",
     "№1 Орта Мектеп", "№2 Мектеп Гимназия", "№3 Орта Мектеп", "№4 Орта Мектеп", "№5 Орта Мектеп", "№6 МГ",
