@@ -16,6 +16,7 @@ import json
 import random
 import math
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 from django.utils.timezone import now
 
 # Create your views here.
@@ -42,7 +43,7 @@ def home(request):
         else:
             subm_json = json.dumps(None)
             task_json = json.dumps(None)
-
+        
         submissions_json = json.dumps(submissions, default=str)
         context = {
             'name': student.first_name,
@@ -54,13 +55,10 @@ def home(request):
         return render(request, 'home_student.html', context)
     
     elif request.session.get('user_type') == 'teacher':
-        teacher = Teacher.objects.get(user = request.user)
-        school = teacher.school
-        submissions = list(Submission.objects.filter(school=school)
-                            .exclude(status='new')
+        submissions = list(Submission.objects.exclude(status='new')
                             .order_by('deadline')
                             .values('id', 'title', 'result', 'status', 'deadline', 'student__first_name', 'student__last_name', 'task__rank'))
-        tasks = list(Task.objects.filter(school=school)
+        tasks = list(Task.objects.all()
                 .values('id', 'rank', 'text'))
         
         submissions_json = json.dumps(submissions, default=str)
@@ -154,12 +152,9 @@ def signup(request):
             except Student.DoesNotExist:
                 last_name = request.POST['lastname']
                 first_name = request.POST['firstname']
+                patronim = request.POST['patronim']
                 phone = request.POST['phone']
                 school = request.POST['school']
-                school_obj = School.objects.get(name = school)
-                grade = request.POST['grade']
-                lang = request.POST['lang']
-                print(lang)
 
                 # Create the user with IIN as username and default password
                 user = User.objects.create_user(username=iin, password='AIS@2025')
@@ -172,12 +167,11 @@ def signup(request):
                     user=user,
                     last_name=last_name,
                     first_name=first_name,
+                    patronim=patronim,
                     iin=iin,
                     picture = 'Avatar.png',
                     phone=phone,
-                    school=school_obj,
-                    grade=grade,
-                    lang=lang,
+                    school=school,
                     rank='iron',
                 )
                 student.save()
@@ -190,9 +184,8 @@ def signup(request):
 
                 return redirect('login')
         else:
-            schools = list(School.objects.values_list("name", flat=True))
             context = {
-                "Schools": schools,
+                "Schools": schools_choice,
             }
             return render(request, 'signup.html', context)
         
@@ -301,7 +294,7 @@ def submit(request, id):
     student = Student.objects.get(user=request.user)
     try:
         subm = Submission.objects.get(id=id)
-        if (student != subm.student) or (student.school != subm.school):
+        if (student != subm.student):
             return redirect('error', 'Looks like you can not submit this essay')
         if subm.status=='new':
             if request.method=="POST":
@@ -364,7 +357,7 @@ def tasks(request):
             print(tasks)
 
             for i in range(5):
-                task = Task.objects.get(id=task_ids[i], school=teacher.school)
+                task = Task.objects.get(id=task_ids[i])
                 task.text = tasks[i]
                 task.save()
             return JsonResponse({'status': 'ok'})
@@ -381,10 +374,6 @@ def check(request, id):
         subm = Submission.objects.get(id=id)
         if subm.status != 'rev':
             return redirect('error', "Submission is either checked or not completed yet")
-        
-        teacher = Teacher.objects.get(user=request.user)
-        if teacher.school != subm.school:
-            return redirect('error', "Кажется вы забрели не туда")
 
         if request.method == "POST":
             result = int(request.POST['result'])
@@ -492,10 +481,9 @@ def submission(request, id):
 def assign_task(student, attempt):
     #Get the base id
     rank = student.rank
-    school = student.school 
 
     #Populate available tasks
-    tasks = Task.objects.filter(school=school, rank=rank)
+    tasks = Task.objects.filter(rank=rank)
 
     #Second or more attempt logic
     if (attempt!=1):
@@ -509,10 +497,11 @@ def assign_task(student, attempt):
 
     #Choose random task
     task = random.choice(tasks)
-    deadline = now() + timedelta(weeks=1)
+    dt_aktobe = datetime.now(ZoneInfo('Asia/Oral'))
+    deadline = dt_aktobe + timedelta(weeks=1)
 
     #Create new submission
-    submission = Submission.objects.create(student=student, task=task, school=school, status='new', deadline=deadline, attempt=attempt)
+    submission = Submission.objects.create(student=student, task=task, status='new', deadline=deadline, attempt=attempt)
 
 def error(request, error_code):
     return render(request, '404.html', {'error_code': error_code})

@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const div_task = document.getElementById('div_task');
     const btn_cancel = document.getElementById('btn_cancel');
     const btn_save = document.getElementById('btn_save');
+
     //Tasks
     const task1 = new Quill('#task1', {
         theme: 'snow'
@@ -156,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function evaluate_mode() {
         if (mode === 'subm'){
-            table_header.innerText = 'Оқушылар тапсырған эсселер';
+            table_header.innerText = 'Мұғалімдер жазған эсселер';
 
             div_task.style.display = 'none';
             div_subm.style.display = 'block';

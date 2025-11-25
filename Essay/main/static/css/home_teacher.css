@@ -50,6 +50,10 @@ img{
     height: auto;
 }
 
+button {
+    cursor: pointer;
+}
+
 /* Button styles  */
 button.primary{
     width: 140px;

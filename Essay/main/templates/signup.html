@@ -36,6 +36,12 @@
                 </div>
 
                 <div class="form-control">
+                    <label for="firstname">Әкесінің Аты</label>
+                    <input type="text" id="patronim" name="patronim" maxlength="20">
+                    <i class="icon"></i>
+                </div>
+
+                <div class="form-control">
                     <label for="iin">ЖСН</label>
                     <input type="text" id="iin" name="iin" inputmode="numeric" placeholder="Оқушының ЖСН (12 символ)" maxlength="13" autocomplete="off">
                     <i class="icon"></i>
@@ -68,29 +74,8 @@
                         </div>
                 </div>
 
-                <div class="form-control">
-                    <label for="grade">Сынып</label>
-                    <input type="number" id="grade" name="grade">
-                    <i class="icon"></i>
-                </div>
-
-                <div class="form-control">
-                    <label for="lang">Оқу тілі</label>
-                    <div class="radio-options">
-                        <div class="radio-option">
-                            <input type="radio" id="kk" name="lang" value="kz" checked>
-                            <label for="kk">Қазақ</label>
-                        </div>
-                        <div class="radio-option">
-                            <input type="radio" id="ru" name="lang" value="ru">
-                            <label for="ru">Орыс</label>
-                        </div>
-                    </div>
-                    <i class="icon"></i>
-                </div>
-
                 <div id="pin">
-                    <label>Введите код из смс:</label>
+                    <label>Смс кодын теріңіз</label>
             
                     <div class="digit-group" data-group-name="digits" data-autosubmit="false" autocomplete="off">
                         <input type="text" id="digit-1" name="digit-1" data-next="digit-2" />
@@ -101,7 +86,7 @@
 
             </div>
             <div class="button-section">
-                <button id="button_cancel">Назад</button>
+                <button id="button_cancel">Артқа</button>
                 <button id="button_submit">Тіркелу</button>
             </div>
         </form>

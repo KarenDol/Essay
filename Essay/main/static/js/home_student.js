@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const deadline = new Date(act_subm.deadline);
         const formattedDeadline = deadline.toISOString().slice(0, 16).replace('T', ' ');
-        submitH3.innerText = `Submit New Essay by ${formattedDeadline}`;
+        submitH3.innerText = `Жаңа эссені тапсыру күні - ${formattedDeadline}`;
 
         const attemptButton = document.getElementById('attempt-button');
         attemptButton.addEventListener('click', () => {

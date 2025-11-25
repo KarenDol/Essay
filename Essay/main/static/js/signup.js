@@ -2,8 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('mainForm');
     const lastname = document.getElementById('lastname');
     const firstname = document.getElementById('firstname');
+    const patronim = document.getElementById('patronim');
     const iin = document.getElementById('iin');
-    const grade = document.getElementById('grade');
     const phone = document.getElementById('phone');
     const phoneLabel = document.getElementById('phone-label');
     let wa_exists = false; //WA validation
@@ -11,20 +11,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const button_submit = document.getElementById('button_submit');
 
     lastname.addEventListener('input', () => {
-        lastname.value = lastname.value.replace(/[^a-zA-Zа-яА-ЯёЁәңғүұқөһӘҢҒҮҰҚӨҺ-]/g, '');
+        lastname.value = lastname.value.replace(/[^а-яА-ЯёЁәңғүұқөһӘҢҒҮҰҚӨҺ-]/g, '');
     });
 
     firstname.addEventListener('input', () => {
-        firstname.value = firstname.value.replace(/[^a-zA-Zа-яА-ЯёЁәңғүұқөһӘҢҒҮҰҚӨҺ-]/g, '');
+        firstname.value = firstname.value.replace(/[^а-яА-ЯёЁәңғүұқөһӘҢҒҮҰҚӨҺ-]/g, '');
+    });
+
+    patronim.addEventListener('input', () => {
+        patronim.value = patronim.value.replace(/[^а-яА-ЯёЁәңғүұқөһӘҢҒҮҰҚӨҺ-]/g, '');
     });
 
     iin.addEventListener('input', () => {
         iin.value = iin.value.replace(/[^0-9]/g, '');
         iin.value = iin.value.replace(/\B(?=(\d{6})+(?!\d))/g, ' '); // Add spaces for better visibility
-    });
-
-    grade.addEventListener('input', () => {
-        grade.value = grade.value.replace(/[^0-9]/g, '');
     });
 
     phone.addEventListener('input', existsWhatsapp);
@@ -40,8 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let isValid = true;
         validateField(lastname, lastname.value.trim() !== '', 'Это поле не может быть пустым');
         validateField(firstname, firstname.value.trim() !== '', 'Это поле не может быть пустым');
+        validateField(patronim, firstname.value.trim() !== '', 'Это поле не может быть пустым');
         validateField(iin, iin.value.trim().length == 13, 'Это поле не может быть пустым');
-        validateField(grade, (grade.value>0 && grade.value<13), 'Это поле не может быть пустым');
         validateField(phone, wa_exists, 'Неверный номер телефона');
 
         // Ensure class selection is valid
@@ -173,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (selectedPosition.value === 'Басқа'){
                 selectedPosition.type = 'text'; //Unhidden the input
                 selectedPosition.value = '';
-                selectedPosition.placeholder = 'Ex.: Тренер по йоге...';
+                selectedPosition.placeholder = 'Ex.: Алға қаласы, №4 мектеп...';
                 selectedPosition.style.width = '70%';
                 selectMenu.style.width = '30%';
             }
@@ -203,13 +203,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 selectedPosition.classList.add('error');
                 selectedPosition.classList.remove('success');
                 selectedPosition.style.borderColor = '#e74d3cb0';
-                selectedPosition.placeholder = 'Уточните позицию';
+                selectedPosition.placeholder = 'Уточните школу';
             }
             return false;
         } else {
             selectMenu.classList.add('success');
             selectMenu.classList.remove('error');
-            if (sBtn_text.innerText==='Другое'){
+            if (sBtn_text.innerText==='Басқа'){
                 selectedPosition.classList.add('success');
                 selectedPosition.classList.remove('error');
                 selectedPosition.style.borderColor = '#28bb65e3';
