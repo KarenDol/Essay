@@ -378,9 +378,12 @@ def check(request, id):
         if request.method == "POST":
             result = int(request.POST['result'])
             feedback = request.POST['feedback']
+            comments = json.loads(request.POST["comments"])
+            print(comments)
 
             subm.result = result
             subm.feedback = feedback
+            subm.comments = comments
             subm.status = 'che'
             subm.save()
 
@@ -461,6 +464,7 @@ def submission(request, id):
                 context = {
                     'subm': submission_json,
                     'task': task_json,
+                    'rank': f"ranks/{task.rank}.png",
                 }
                 return render(request, 'submission.html', context)
             else:
@@ -483,7 +487,7 @@ def assign_task(student, attempt):
     rank = student.rank
 
     #Populate available tasks
-    tasks = Task.objects.filter(rank=rank)
+    tasks = list(Task.objects.filter(rank=rank))
 
     #Second or more attempt logic
     if (attempt!=1):

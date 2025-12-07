@@ -52,6 +52,8 @@
         </div>
         <!-- Include the Quill library -->
         <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+        <!-- Highlight Declaration for Quill -->
+        <script src="{% static 'js/highlight.js'%}"></script>
         <script>
             const subm_obj = JSON.parse('{{ subm|escapejs }}');
             const task_obj = JSON.parse('{{ task|escapejs }}');

@@ -63,3 +63,4 @@ class Submission(models.Model):
     #Checked essay attributes
     result = models.IntegerField(null=True)
     feedback = models.JSONField(null=True)
+    comments = models.JSONField(null=True, default=list) #highlights after the check

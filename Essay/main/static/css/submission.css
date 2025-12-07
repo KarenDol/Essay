@@ -299,3 +299,8 @@ button:hover{
 input[type="range"] {
     width: 200px;
 }
+
+/* Quill highlight styles */
+.highlight {
+    background: yellow;
+}

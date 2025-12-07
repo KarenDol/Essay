@@ -1,10 +1,12 @@
 const Inline = Quill.import("blots/inline");
 
 class HighlightBlot extends Inline {
+  static sanitize = true;
+
   static create(commentId) {
     let node = super.create();
     node.setAttribute("data-comment-id", commentId);
-    node.style.backgroundColor = "yellow";   // highlight color
+    node.classList.add("highlight");   // highlight color
     return node;
   }
 
